@@ -1,0 +1,175 @@
+\chapter{Introduction}
+
+\section{Presentation of the course}
+
+Our goal in this course is to build towards a mostly self-contained presentation of two recent papers in quantum computing: 
+\begin{itemize}
+\item[(a)] \emph{Classical verification of quantum computations}, by Mahadev~\cite{mahadev2018classical}. This paper addresses the question of \emph{verification of quantum computation}: given \emph{classical} data that is obtained from a quantum device that claims to have the ability to execute arbitrary quantum circuits (of polynomial size), how can a classical ``verifier'' ensure that the reported data indicates the correct outcome of the computation? For problems that have a natural classical certificate of correctness this is a simple task. For example, if the problem is to determine, given as input an integer $n$, if $n$ has a prime factor larger than (say) $n^{1/4}$, then a positive answer can be certified by providing such a factor when it exists (and a negative answer can be certified by providing a complete prime decomposition of $n$). Such a factor, or more generally the prime decomposition of $n$, can be determined in quantum polynomial time using Shor's factoring algorithm; verifying it can be done in classical polynomial time. 
+
+However, not all problems that can be solved in quantum polynomial time are believed to lie in the class $\NP$, i.e. not all quantum computations have outcomes that can be certified using an easily verifiable classical ``witness''. The well-known complexity-theoretic inclusion $\BQP \subseteq \IP$, that we discuss later in the course, implies that all problems in $\BQP$ have a classical randomized polynomial-time \emph{interactive} verification procedure; however, in this procedure the prover may be asked to perform computations that are \emph{harder} than $\BQP$. 
+
+What Mahadev shows in her breakthrough result is that every polynomial time quantum computation can nevertheless be verified in classical randomized polynomial time by interacting with a quantum polynomial time device \emph{as long as} one can ascertain (or believes)  that the quantum device does not have the power to break  a natural ``post-quantum'' cryptographic assumption (namely, the ``Learning with Errors'' (LWE) assumption). 
+
+\item[(b)] $\MIP^*=\RE$, by Ji, Natarajan, Vidick, Wright and Yuen~\cite{ji2020mip}. The equality that gives this paper its title is an equality between complexity classes, i.e.\ computational problems that have a similar level of ``difficulty'' in a given model of computation (e.g.\ $\BQP$ and $\NP$ are complexity classes). Here, $\MIP^*$ designates all those computational problems that can be decided efficiently in classical randomized polynomial time (similar to the verification in the previous item) by asking (classical) questions to \emph{two infinitely powerful quantum provers sharing entanglement}. Here the provers have unbounded computational capabilities and can hence solve any computational problem they like, including the one that the verifier is concerned with. However, it is assumed that the provers are not trusted: they will always try to convince the verifier that the answer to the problem in question is ``yes'' (e.g. ``yes, this graph does have a valid $3$-coloring''). The verifier has to employ certain tricks, or ``tests'', to detect any malicious behavior by the provers, so as never to make the wrong decision. The class $\RE$ denotes all problems for which there is an algorithm, running in any amount of time, that always eventually halts with the answer ``yes'' when this is the case (the algorithm does not need to halt in other cases). $\RE$ is a mind-boglingly large class of problems; it contains any decidable problem and even some undecidable ones such as the halting problem, which is complete for the class. 
+
+The equality $\MIP^* = \RE$ is surprising in that it shows that access to untrusted quantum provers grants exceedingly large verification power to the polynomial-time verifier. In contrast, it is known that the same class without entanglement between the provers, denoted $\MIP$, is much smaller, $\MIP=\NEXP$. Other motivations for the result tie it to questions in the foundations of quantum non-locality (``Tsirelson's problem'') and the theory of operator algebras (``Connes' embedding problem'') which we will discuss in due time. 
+\end{itemize}
+
+There is a deep connection between the two papers mentioned above (as well as the many works that led to them---although the course is not meant to be a comprehensive survey, we will review the most relevant references in due course). Indeed, at their heart both works identify means by which a classical procedure is able to certify an appropriate ``quantum computation workspace'' within one (or two) quantum devices, using only a classical interaction with it. In this sense, and to borrow the title of one of the important earlier papers in this area~\cite{reichardt2013classical}, both works provide techniques to tie a ``classical leash'' around a quantum system. In order to achieve this both works ultimately have to tackle the same fundamental problem: what are classical signatures of quantum processes that can be leveraged to certify an entire computation? Very informally, we will see that in the case of (a) this signature is provided by the \emph{uncertainty principle}: the fact that certain measurements in quantum mechanics are intrinsically incompatible; in the case of (b) it will be provided by \emph{quantum non-locality}: the fact that entanglement allows distant parties to generate correlations that have no classical equivalent.
+
+We have motivated our choice of topics by arguing that they tackle a fundamental problem, that of classically testing a quantum system. This is a problem of practical relevance (given an experimental quantum device, does it really do anything quantum?) as well as one that reaches deep to the power and limitations of the scientific method (for a discussion from an epistemological point of view, I recommend the great presentation by Aharonov and Vazirani~\cite{aharonov2012quantum}). It is also a problem that has turned out to stimulate many recent advances in quantum cryptography and complexity. For example, early works in delegated computation encouraged the development of quantum authentication codes, such as the Clifford code, that have found wide uses in cryptography; the study of quantum entangled-prover interactive proof systems has brought many discoveries in the foundations of quantum non-locality, such as dimension witnesses. The topics are connected through the common framework of interactive proof systems and share many techniques. Throughout the course we will make an effort to highlight the many open questions that stimulate research in this area and hope that our choice of results will provide a compelling entry point to it.
+
+\medskip
+
+Having set the stage, let us discuss the structure of the course. We will start by tackling arguably the most fundamental question in this line of work: \emph{what is a qubit}? How to define it mathematically, and how does one ``certify'' its existence? What does it mean to ``test a qubit,'' and how can it be done? This question will occupy us for the four lectures. Exploring it will give us the opportunity to lay common foundations for the discussion of results (a) and (b) above. The remaining 6 lectures will be equally divided in two sets of 3 lectures each. The first set will examine the problem of delegation of polynomial-time quantum computations in general, and then focus on a presentation of Mahadev's result. The second set will discuss the theory of multi-prover interactive proof systems and build towards an understanding of the main ingredients in the result by Ji et al.
+
+We will start the course slowly, so that the first few lectures are accessible to as broad a public as possible. The content will be mathematically precise and as self-contained as can be, so that it is possible to follow starting with only an elementary background in quantum computing at the level of the Nielsen \& Chuang textbook~\cite{nielsen2002quantum}. Later lectures will be more involved and may require a somewhat more advanced knowledge of certain topics in cryptography or in complexity theory; I will aim to keep the presentation as self-contained as possible. My goal is that by the end of the course an assiduous participant may dive into either paper with a solid understanding of the main steps and key techniques in mind. 
+
+
+
+\section{What is a qubit?}
+
+Let's start with the basics; as we will see shortly the simplest questions are not always the least interesting. 
+
+According to Wikipedia, ``The qubit is the basic unit of information for quantum computers.'' The associated entry goes on to declare that ``A qubit is a two-state (or two-level) quantum-mechanical system,'' the latter being defined as ``a quantum system that can exist in any quantum superposition of two independent (physically distinguishable) quantum states.'' So a qubit is some kind of ``system'' whose state space has two fundamental states, and moreover such that the system can be in any ``superposition'' of these two states. Note that the definition makes an important distinction between the system (qubit) itself and its state. The latter is easier to define, and indeed it is through its state space that the  ``qubit'' is generally introduced in quantum computing courses: the \emph{state space of a qubit} is the set of unit vectors in the complex vector space $\C^2$; we denote this space as $\State(\C^2)$.\footnote{To be consistent with standard mathematical terminology we'd call this the complex projective space and denote it $P^2(\C)$. We'll follow standard quantum computing conventions instead.} Thus the \emph{state of a qubit} can be represented by a unit vector in $\C^2$; for example, 
+\[\ket{0} = \begin{pmatrix} 1 \\ 0 \end{pmatrix}\qquad\text{and}\qquad \ket{+} = \frac{1}{\sqrt{2}}\begin{pmatrix} 1 \\ 1 \end{pmatrix}\]
+are both valid states for a qubit.\footnote{For the entirety of this course (except the last lecture) we take the traditional perspective from quantum computer science: unless specified otherwise we consider that Hilbert spaces are always finite dimensional and computation is always performed on qubits in $\C^2$ or possibly higher-dimensional qudits in $\C^d$ for $d\geq 1$ a (finite) integer.}
+
+So we all know how to recognize a valid state for a qubit. But what about \emph{the qubit itself}? We would like a precise definition that captures the intuition given in the Wikipedia entry: a qubit is a ``two-state system'' that can be in any ``independent superposition'' of its two states. In particular, we would like our definition to clearly distinguish this notion form that of a classical ``probabilistic bit'', which could also be considered a two-level system that can be in any ``superposition'' of its two states, $p \,\ol{0} + (1-p)\,\ol{1}$ for any $p\in [0,1]$. What distinguishes the real, ``$1$-dimensional'' degree of freedom $p\in [0,1]$  of the probabilistic bit from the complex, ``$2$-dimensional'' degree of freedom of the qubit?\footnote{$2$-dimensional here refers to the Bloch sphere representation of a qubit, $\ket{\psi}= \cos(\theta/2)\ket{0} + e^{i\varphi} \sin(\theta/2)\ket{1}$.}
+
+As we will soon see, for our purposes it turns out to be most meaningful to attempt a definition in terms of the ``Heisenberg representation'' of quantum mechanics, that places \emph{observable} quantities at a forefront. Informally, we will distinguish a quantum degree of freedom from a classical one by requiring that the quantum degree of freedom can be measured (observed) in two \emph{mutually incompatible ways}.  In order to make this precise we make a small detour to introduce the formalism associated with observable quantities in quantum mechanics. 
+
+\subsection{Observables}
+
+While the state space of a \emph{qubit} is generally taken to be $\C^2$, more generally a quantum mechanical state lies in an arbitrary separable Hilbert space $\mH$.\footnote{``Separable''  means that $\mH$ has a countable basis. In fact quantum states can also live in non-separable Hilbert spaces; we make the restriction for convenience. In fact for the purposes of these notes you may as well think of $\mH$ as being finite-dimensional, i.e.\ $\mH$ is isomorphic to the complex vector space $\C^d$, for some integer $d\geq 1$. Allowing infinite-dimensional spaces gives us a little more generality.} 
+The term ``observable'' is used to denote any quantity that can in principle be obtained as the result of a measurement: for example, position, momentum, spin, energy (with respect to a certain Hamiltonian), are all observables. In full generality an observable is specified by 
+ a Hermitian operator $O$ on $\mH$.\footnote{For us ``Hermitian'' means that $O$ is self-adjoint, $O=O^\dagger$, where $O^\dagger$ is the operator such that $\bra{O^\dagger u}v\rangle = \bra{u}\ket{Ov}$ for all $\ket{v}$ in the domain of $O$. If $\mH$ is finite-dimensional then a matrix representation of $O^\dagger$ is obtained by taking the conjugate-transpose of a matrix representation of $O$.}
+ The interpretation of this is that the eigenvalues of $O$ denote possible outcomes under a measurement of the observable, and  the associated eigenvectors denote states under which the observable deterministically yields that outcome. So, if $O = \sum_i \lambda_i \Pi_i$ is a spectral decomposition of $O$, then any state $\ket{\psi}$ such that $\Pi_i \ket{\psi} = \ket{\psi}$ will deterministically yield the outcome $\lambda_i$ when measured according to $O$. In particular, we see that the important part of an observable is its eigenprojections rather than the associated eigenvalues: the latter are arbitrary labels that are associated to the different possible experimental outcomes. More generally, the \emph{Born rule} specifies that a measurement of an arbitrary state $\ket{\psi}$ under $O$ will yield measurement outcome $\lambda_i$ with probability $\|\Pi_i \ket{\psi}\|^2$; since the $\Pi_i$ form a resolution of the identity ($\sum_i \Pi_i=\Id$) and $\|\ket{\psi}\|^2=1$ we see that these probabilities always sum to $1$, as they should. The \emph{expectation} of the outcome of the measurement is 
+\[ \sum_i \,\lambda_i \|\Pi_i \ket{\psi}\|^2 \,=\, \sum_i \lambda_i \bra{\psi} \Pi_i \ket{\psi} \,=\, \bra{\psi} O \ket{\psi}\;,\]
+a quantity that is sometimes referred to as the ``overlap'' of $\ket{\psi}$ on $O$. We will use this formula often. 
+
+An observable such that $O^2=\Id$ has at most two eigenvalues, $-1$ or $+1$. Such an observable is called a \emph{binary} observable; it is the most frequent kind of observable that we will encounter. 
+
+\subsection{First definition of a qubit}
+
+With a precise mathematical definition of an observable quantity we are ready to make precise our informal definition of a ``qubit'' as ``a system that can be observed in two mutually incompatible ways''. 
+
+\begin{definition}[Qubit, Take 1]\label{def:qubit-take1}
+A \emph{qubit} is a triple $(\mH,X,Z)$ consisting of a separable Hilbert space $\mH$ and a pair of Hermitian operators $X,Z$ acting on a $\mH$ such that $X^2=Z^2=\Id$ and $\{X,Z\}=XZ+ZX=0$.
+\end{definition}
+
+Let's see why 
+Definition~\ref{def:qubit-take1} captures the intuitive notion of ``mutually incompatible'' observables. Let the 'computational basis' be an eigenbasis of $Z$, and the 'Hadamard basis' an eigenbasis of $X$. Then we claim that the anticommutation relation $XZ+ZX=0$ ensures that any vector in the former makes a $45^{\circ}$ angle with any vector in the latter. To see this, let $\ket{\psi}$ be an eigenvector of $X$ with associated eigenvalue $\eps\in\{\pm 1\}$. Then $\bra{\psi} XZ + ZX \ket{\psi} = 0$ immediately implies $2\eps\bra{\psi} Z \ket{\psi}=0$. Given that $Z$ only has $-1$ and $+1$ as eigenvalues, this relation implies that the projections of $\ket{\psi}$ on the two eigenspaces of $Z$ have equal length; in other words, $\ket{\psi}$ lies exactly between the $+1$ and $-1$ eigenspaces of $Z$. (Yet another way of saying this is that all principal angles between an eigenspace of $X$ and one of $Z$ are $\frac{\pi}{4}$; we will make this precise soon.) In this sense any $X$ and $Z$ satisfying the conditions of the definition are ``maximally incompatible'': any definite state for the one is entirely undetermined (i.e.\ yields uniformly random outcomes when measured) under the other. 
+
+There is a problem with this definition: by allowing the underlying Hilbert space $\mH$ to be arbitrary we seem to have all but dropped the earlier requirement that a qubit is a system whose state space is ``two-level'' and thus identifiable with the projective space $\State(\C^2)$. Luckily, the following lemma allows us to make the connection with this requirement. 
+
+\begin{lemma}\label{lem:qubit-c2}
+Let $(\mH,X,Z)$ be a qubit. Then there is a Hilbert space $\mH'$ and an isomorphism $\mH\simeq \C^2 \otimes \mH'$ such that under the same isomorphism, $X\simeq \sigma_X\otimes \Id$ and $Z\simeq \sigma_Z \otimes \Id$.\footnote{The reader might wonder what happened to $\sigma_Y$...Don't we need it to define our qubit? Here we are taking the ``operator algebraists''' perspective, which is that if the system supports $X$ and $Z$ observables then it also supports $Y=iXZ$. Because $Y$ is determined by $X$ and $Z$, we do not include it in the definition.} Here, $\sigma_X$ and $\sigma_Z$ are the usual Pauli observables on $\C^2$: in matrix form, 
+\[ \sigma_X = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix} \qquad\text{and}\qquad\sigma_Z = \begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}\;.\]
+\end{lemma}
+
+Note that a consequence of the lemma is that qubits, as defined in Defintion~\ref{def:qubit-take1}, only exist in spaces of even (or infinite) dimension! In particular, qubits don't exist in dimension $1$; indeed, in dimension $1$ all operators commute. This is satisfactory: intuitively, a situation in which all possible observables commute ought to be considered ``classical'' (for instance, because there is a complete set of simultaneous eigenvectors for all observables). 
+
+It will be essential for our later goals that Definition~\ref{def:qubit-take1} does not \emph{a priori} require $\mH$ to be a two-dimensional space. Indeed, how would one test such a claim? One does not ``see'' the dimension of the state space; while it is possible to probe parts of it it can never be excluded that the state space is larger than what is accessible to the experimentalist's setup. In this sense Definition~\ref{def:qubit-take1} has a nice ``operational'' flavor to it: it refers to \emph{observables} of the system and their properties.  Although much more work is needed before we are able to make any of these statement formal, we see the definition as a good step towards giving us the ability to ``test'' that a system ``is a qubit''. In addition, the definition clearly has meaningful consequences; in particular it implies that qubits do not have a ``classical explanation'', so that a ``test for a qubit'' can serve as a ``test for quantumness'', i.e.\ a test that distinguishes quantum from classical behavior. 
+
+The proof of the lemma makes use of an elementary but fundamental tool in the analysis of many quantum information protocols, the CS (for ``Cosine-Sine'') decomposition. This decomposition is also known as ``Jordan's lemma,'' after Camille Jordan's \emph{Traité des substitutions et des équations algébriques} from 1870 (see this EHESS PhD thesis~\cite{brechenmacher2006histoire} for a masterful 730-page account of the history behind the use of Jordan's name alongside this theorem). Given that we will use the lemma frequently we give it a self-contained treatment in the next section. 
+
+\subsection{Jordan's lemma}
+
+The discussion of Jordan's lemma in this section is mostly borrowed from \url{https://cims.nyu.edu/~regev/teaching/quantum_fall_2005/ln/qma.pdf}. Let $P,Q$ be two orthogonal projections on a separable Hilbert space $\mH$, and consider their sum $R=P+Q$. Then $R$ is Hermitian so it has an orthonormal set of eigenvectors that is also a basis for $\mH$.\footnote{Here we are using that $\mH$ is separable.} Let $\ket{\varphi}$ be  any eigenvector of $R$ with associated eigenvalue $\lambda$. Consider two cases for the vector $P\ket{\varphi}$. The first case is that $P\ket{\varphi}$ is parallel to $\ket{\varphi}$. In this case, since
+\begin{equation}\label{eq:pq}
+Q\ket{\varphi} = R\ket{\varphi} - P\ket{\varphi} = \lambda \ket{\varphi} - P \ket{\varphi}
+\end{equation}
+it follows that $Q\ket{\varphi}$ is also parallel to $\ket{\varphi}$, so $\ket{\varphi}$ is a common eigenvector of $P$ and $Q$. The second case is that $P\ket{\varphi}$ is linearly independent from $\ket{\varphi}$. In this case the two-dimensional subspace $\mS$ spanned by $\ket{\varphi}$ and $P\ket{\varphi}$ is invariant under $P$, because being a projection $P$ satisfies $P^2=P$. Moreover, by
+~\eqref{eq:pq} we see that $Q\ket{\varphi}$ lies in $\mS$, and  
+\[ Q P \ket{\varphi} \,=\, Q (\lambda \ket{\varphi}  - Q \ket{\varphi}) = (\lambda-1)Q \ket{\varphi}\]
+is also in that subspace. Using that $P$, $Q$ are projections and that $P$ is neither $0$ nor the identity on $\mS$ (otherwise we would have been in the first case) it follows that there is a basis of $\mS$ such that in that basis, 
+\begin{equation}\label{eq:pq-form}
+ P = \begin{pmatrix} 1 & 0 \\ 0 & 0 \end{pmatrix} \qquad \text{and} \qquad Q = \begin{pmatrix} c^2 & cs \\ cs & s^2 \end{pmatrix}\;,
+\end{equation}
+where $c = \cos\theta$ and $s=\sin\theta$ for some $\theta \in [0,\pi/2)$. (Angles in $[\pi/2,\pi)$ need not be considered because the sign of $c$ can be flipped by negating the second basis vector for the chosen basis of $\mS$; similarly angles in $[-\pi,0)$ can be recovered by exchanging the two chosen basis vectors.) The following lemma summarizes the discussion so far. 
+
+\begin{lemma}\label{lem:cs-dec}
+Let $P,Q$ be projections on a separable Hilbert space $\mH$. Then there exists an orthogonal decomposition $\mH = \oplus_i \mS_i$ such that each $\mS_i$ is a $1$- or $2$-dimensional subspace that is stable by $P$ and $Q$. Furthermore, whenever $\mS_i$ is $2$-dimensional there is a basis for it in which $P$ and $Q$ take the form~\eqref{eq:pq-form}, for some $c_i$ and $s_i$ that may depend on $\mS_i$.\footnote{For the case of $1$-dimensional subspaces, since $P$ and $Q$ are projections they are each either identically $0$ or identity in those subspaces.}
+\end{lemma} 
+
+This very useful lemma informally says that, when only two projections are concerned, we can reduce the analysis to a 2-dimensional problem. Let's apply it to show Lemma~\ref{lem:qubit-c2}. 
+
+
+\begin{proof}[Proof of Lemma~\ref{lem:qubit-c2}]
+Let $\mH$, $X$, $Z$ be as in the statement of the lemma. Let $P=2Z-\Id$ and $Q = 2X-\Id$. Then $P,Q$ are projections on $\mH$ so we can decompose them according to Lemma~\ref{lem:cs-dec}. Let $(\ket{e_i},\ket{f_i})$ be a basis for the $i$-th space $\mS_i$ in which the matrices for $P$ and $Q$ have the form~\eqref{eq:pq-form}. Using $XZ+ZX=0$ it follows that (i) there cannot be any $1$-dimensional blocks, because these necessarily commute, and (ii) in any two-dimensional block, the angle $\theta$ must equal $\pi/4$, as this is the only value in $[0,\pi/2)$ that leads to anti-commuting operators. Thus in each space $\mS_i$, $Z$ acts exactly as $\sigma_Z$ and $X$ as $\sigma_X$. Let $\mH'$ have canonical basis $\{\ket{i}\}$, where $i$ ranges over the block indices in the decomposition of $P$ and $Q$. The required isomorphism is obtained by e.g.\ mapping $\ket{e_i}\in \mH$ to $\ket{0} \otimes \ket{i}\in \C^2 \otimes \mH'$ and $\ket{f_i}\in\mH$ to $\ket{1}\otimes \ket{i}\in\C^2\otimes\mH'$. 
+\end{proof}
+
+
+\subsection{$n$ qubits}
+
+Now that we have a working definition of a qubit, how about two, three, or even $n$ qubits? What we mean when we say that a system ``has $n$ qubits'' is that (i) it should have $n$ copies of one qubit, so there should be $(X_1,Z_1), (X_2,Z_2),\ldots,(X_n,Z_n)$ on $\mH$ such that each pair satisfies the definition of a qubit, and moreover (ii) the qubits should be ``independent'': indeed, we wouldn't want something like $X_1=X_2$ to happen. How do we prevent this? Intuitively ``independence'' of the qubits should be reflected in the fact that they can be observed ``independently'', in any order, such that if e.g. we `` observe'' qubits $1$ and $2$ and then discard the outcome associated with qubit $1$, we should obtain an outcome that is identically distributed as if we had only observed qubit $2$ in the first place. These considerations suggest the following definition. 
+
+\begin{definition}[$n$ qubits, Take 1]\label{def:n-qubit-take1}
+A system of \emph{$n$ qubits} is a tuple $(\mH,X_1,Z_1,\ldots,X_n,Z_n)$ consisting of a separable Hilbert space $\mH$ and $n$ pairs of Hermitian operators $(X_i,Z_i)$ for $i\in\{1,\ldots,n\}$ acting on $\mH$ such that
+\begin{enumerate}
+\item[(i)] For each $i\in \{1,\ldots,n\}$, $(\mH,X_i,Z_i)$ is a qubit;
+\item[(ii)] For each $i\neq j\in \{1,\ldots,n\}$, qubits $i$ and $j$ are independent:
+\[ [X_i,X_j]\,=\,[X_i,Z_j]\,=\,[Z_i,X_j]\,=\,[Z_i,Z_j]\;,\]
+where for arbitrary operators $A,B$ on $\mH$, $[A,B]=AB-BA$ denotes the algebra commutator. 
+\end{enumerate}
+\end{definition}
+
+The commutation condition (ii) indeed implies that measurements on different qubits can be performed ``independently''. For example, the expectation of a measurement of qubit $2$ in the Hadamard basis \emph{after} qubit $1$ has been measured in the computational basis is given by (where we write $X_1 = X_1^0 - X_1^1$ for the spectral decomposition of the observable $X_1$)
+\begin{align*}
+\frac{1}{2} \bra{\psi} X_1^0 Z_2 X_1^0 \ket{\psi} + \frac{1}{2} \bra{\psi} X_1^1 Z_2 X_1^1 \ket{\psi} &= \bra{\psi} X_1 Z_2 X_1 \ket{\psi} \\
+&= \bra{\psi}  Z_2 X_1^2 \ket{\psi}\\
+&= \bra{\psi}  Z_2  \ket{\psi}\;,
+\end{align*}
+as desired. (Here, for the first equality we used that  $\bra{\psi} X_1^0 Z X_1^1 \ket{\psi}  =  \bra{\psi} X_1^1 Z X_1^0 \ket{\psi} $, for the second we used the commutation condition $[X_1,Z_2]=0$, and for the last we used $X_1^2=\Id$. This calculation can be done for any pair of qubits, or even any sequence of measurements of qubits, and it shows that item (ii) in Definition~\ref{def:n-qubit-take1} indeed captures the idea that each of the $n$ qubits can be measured independently. 
+
+Note however that this ``independence'' is not necessarily quite the same as there truly being $n$ qubits. In particular, if our definition of a qubit only required the use of a single observable $X$, as a classical bit would, then taking $X_1=\cdots=X_n$ would satisfy both (i) and (ii), since an operator always commutes with itself. Indeed, just as we're used to a qubit being defined through its state space $\State(\C^2)$, we're used to $n$ qubits being defined through their state space $\State(\C^2)\otimes \cdots \otimes \State(\C^2)$. Where is the tensor product in Definition~\ref{def:n-qubit-take1}, isn't it missing? The following lemma shows that an $n$-fold tensor product is in fact implicit in the definition. 
+
+\begin{lemma}\label{lem:n-qubit-c2}
+Let $(\mH,X_1,Z_1,\ldots,X_n,Z_n)$ be a system of $n$ qubits. Then there exists a Hilbert space $\mH'$ and an isormorphism $\mH\simeq (\C^2)^{\otimes n} \otimes \mH'$ such that under the same isomorphism, for every $i\in \{1,\ldots, n\}$ and $W\in \{X,Z\}$, $W_i \simeq \sigma_{W,i} \otimes \Id_{\mH'}$, where here $\sigma_{W,i}$ denotes the Pauli $W$ operator acting on the $i$-th copy of $\C^2$. 
+\end{lemma} 
+
+\begin{proof}
+We show the lemma by induction on $n\geq 1$. The case $n=1$ is provided by Lemma~\ref{lem:qubit-c2}. Suppose the lemma shown for some $n\geq 1$, show it for $(n+1)$. Let $(\mH,X_1,Z_1,\ldots,X_{n+1},Z_{n+1})$ be a system of $(n+1)$ qubits. Since $(\mH,X_1,Z_1,\ldots,X_n,Z_n)$ is a system $n$ qubits we can apply the induction hypothesis to it. Let $\mH'$ and $\pi'$ be the promised space and isomorphism. The key step is provided by the following claim.
+
+\begin{claim}\label{claim:n-qubit-c2}
+Let $W$ be an Hermitian operator on $\mH$ such that $[W,X_i]=[W,Z_i]=0$ for all $i\in \{1,\ldots,n\}$. Then there exists $W'$ Hermitian acting on $\mH'$ such that under $\pi'$, $W\simeq \Id_{(\C^2)^{\otimes n}} \otimes W'$. 
+\end{claim}
+
+The claim immediately gives us the induction step: by applying it to $X_{n+1}$ and $Z_{n+1}$ we find $X'_{n+1}$ and $Z'_{n+1}$ on $\mH'$ such that $(\mH',X'_{n+1},Z'_{n+1})$ is a qubit. Applying Lemma~\ref{lem:qubit-c2} to this qubit  and composing the isomorphism obtained with $\i'$ completes the induction step. Therefore, it only remains to prove the claim. 
+
+\begin{proof}[Proof of Claim~\ref{claim:n-qubit-c2}]
+Clearly it suffices to prove the statement ``under $\pi$'', i.e. for the case where $X_i = \sigma_{X,i}$ and $Z_i = \sigma_{Z,i}$. We introduce the following notation: for $a,b\in\{0,1\}^n$, 
+\[\sigma_X(a) = \sigma_{X,1}^{a_1} \otimes \cdots \otimes \sigma_{X,n}^{a_n}\qquad\text{and}\qquad\sigma_Z(b) = \sigma_{Z,1}^{b_1} \otimes \cdots \otimes \sigma_{Z,n}^{b_n}\;.\]
+Using that the $1$-qubit Pauli matrixes $\Id$, $\sigma_X$, $\sigma_Z$ and $\sigma_X\sigma_Z$ form a basis for the complex vector space of linear operators on $\C^2$, $W$ has a decomposition 
+\[ W = \sum_{a,b}\, \sigma_X(a) \sigma_Z(b) \otimes W_{a,b}\;,\]
+where $W_{a,b}$ are arbitrary operators on $\mH'$ (they are not necessarily Hermitian). Writing out the condition that $W$ commutes with any $\sigma_X(c)\sigma_Z(d)$, using the Pauli (anti-)commutation relations and identifying terms (using that $ \sigma_X(a) \sigma_Z(b)$ are linearly independent) it follows that for any $a,b,c,d$, $(-1)^{b\cdot c} W_{a,b} = (-1)^{a \cdot d} W_{a,b}$. Clearly this condition can only be satisfied if $W_{a,b}=0$ whenever $(a,b)\neq (0,0)$, proving the claim. 
+\end{proof}
+
+\end{proof}
+
+\begin{remark}
+The statement of Lemma~\ref{lem:n-qubit-c2} can be reformulated in the language of group representation theory, and this reformulation will be useful later on. The ``$n$ qubit Weyl-Heisenberg group'' is the $2\cdot 4^n$-element group $G_n$ that is generated by the $n$-qubit $\sigma_X$ and $\sigma_Z$ matrices; its elements are $(-1)^c\sigma_X(a)\sigma_Z(b)$ for $a,b\in\{0,1\}^n$ and $c\in\{0,1\}$. From any system of $n$ qubits $(\mH,X_1,Z_1,\ldots,X_n,Z_n)$ it is straightforward to specify a representation $\phi$ of the direct product of $n$ copies of $G$ by setting $\phi((-1)^c\sigma_X(a)\sigma_Z(b)) = (-1)^c \prod_i X_i^{a_i} \prod_i Z_i^{b_i}$. The lemma can be adapted to show that any representation of $G_n$ that in addition sends $-1$ to $-1$, as $\phi$ does, must be a direct sum of copies of the Pauli representation that we used to define $G_n$. 
+\end{remark}
+
+\subsection{Approximate qubits}
+
+An important theme of this course will be that the objects that we observe and manipulate in our ``protocols'' or ``experiments'' generally cannot be assumed to be perfectly ``clean'' or ``noise-free''. In this respect, the following exercise is a simple test that we ought to make on our definition; furthermore, it is a good exercise to practice the use of the CS decomposition. 
+
+\begin{exercise}
+Suppose that $X$ and $Z$ are binary observables on $\mH$ such that $\|\{X,Z\}\|\leq \eps$ for some $\eps \geq 0$. Show that there exists a qubit $(\mH,X',Z')$ such that $\max\{\|X-X'\|,\|Z-Z'\|\} \leq \delta(\eps)$. State the best dependence $\delta$ that you can get. 
+\end{exercise} 
+
+The exercise can be extended to consider $n$ approximate qubits, but the proof is more delicate, as some work is needed to keep the errors under control. The following is shown in~\cite{}. 
+
+
+
+\subsection{An operational definition?}
+
+Earlier we qualified our definition of a qubit as being ``operational''. This term is generally used to refer to a definition that can be ``observed'', i.e.\ the definition should imply a natural ``test'' that can be performed experimentally and that ``certifies'' that a certain object satisfies the definition in some way or another. Definition~\ref{def:qubit-take1}, or even the approximate version of it suggested in the previous section, lacks severely in that matter: who gets to observe ``operators''? How can the anti-commutator be ``witnessed''? In the next lecture we will refine our definition so that we are able to answer these questions. 
+
+
+
+
+
+\Closesolutionfile{mycor}
